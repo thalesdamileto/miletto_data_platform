@@ -1,0 +1,13 @@
+# Declarative Kafka topics for this platform.
+# Schema is documented in instructions/.cursorrules; validate with optional tooling (pydantic + pyyaml) when added.
+
+topics:
+  - name: example.events.v1
+    partitions: 3
+    replication_factor: 3
+    config:
+      retention.ms: "604800000"
+      cleanup.policy: delete
+    description: >
+      Example topic. Use cleanup.policy=delete for event streams; use compact for changelog
+      or keyed command topics (Kafka log compaction).

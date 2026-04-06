@@ -1,0 +1,22 @@
+Metadata-Version: 2.4
+Name: miletto-data-platform
+Version: 0.0.0
+Summary: Monorepo for data platform assets (Databricks, Kafka, contracts).
+License: Proprietary
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+Requires-Dist: mypy>=1.8; extra == "dev"
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: ruff>=0.3; extra == "dev"
+Provides-Extra: kafka
+Requires-Dist: pydantic>=2.6; extra == "kafka"
+Requires-Dist: pyyaml>=6.0; extra == "kafka"
+Provides-Extra: contracts
+Requires-Dist: pydantic>=2.6; extra == "contracts"
+Requires-Dist: pyyaml>=6.0; extra == "contracts"
+Provides-Extra: ui
+Requires-Dist: streamlit>=1.40; extra == "ui"
+
+# miletto_data_platform
+genreal repo for a data platform

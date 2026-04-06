@@ -1,0 +1,40 @@
+# Kafka application — AI / agent context
+
+## Technical purpose
+
+Declarative **Kafka topic provisioning** as code. Changes to streaming boundaries or event names should be reflected here so infrastructure and reviewers see a single source of truth.
+
+## Design patterns
+
+- **Edit topics in `topics.yaml` only** (file at **`kafka/topics.yaml`**, repo root paths below) — or, if you later split files, under `kafka/topics/*.yaml` with one index — document that change in this file first.
+- **Naming:** Prefer `<domain>.<entity>.v<major>` (or team convention) for topic names; avoid unversioned public topics when contracts evolve.
+- **Validation:** Prefer **Pydantic** models in a future `scripts/` or `src/` validator; install optional deps: `pip install -e ".[kafka]"`.
+- **Do not** embed cluster connection secrets in this repo; use CI/CD or secret stores.
+
+## Golden code (YAML)
+
+- **`cleanup.policy: delete`** — default for append-only events; time-based retention via `retention.ms`.
+- **`cleanup.policy: compact`** — when you need **log compaction** (keyed changelog, command sourcing). Do not use compact for high-volume unkeyed events unless you understand compaction semantics.
+
+```yaml
+topics:
+  - name: billing.invoices.v1
+    partitions: 6
+    replication_factor: 3
+    config:
+      retention.ms: "2592000000"
+      cleanup.policy: delete
+    description: Invoice lifecycle events for downstream analytics.
+```
+
+## Glossary
+
+| Term | Meaning |
+|------|---------|
+| **Topic** | Named stream of records; producers write, consumers read. |
+| **Partition** | Ordered, append-only shard of a topic; scales parallelism. |
+| **Replication factor** | How many brokers hold a copy of each partition. |
+| **Consumer group** | Coordinated consumers sharing consumption of a topic (not defined in YAML but tied to deployment). |
+| **Schema Registry** | Optional central store for Avro/JSON Schema/Protobuf; align subject naming with topic and contract versions. |
+| **retention.ms** | How long Kafka retains messages (for `delete` policy). |
+| **cleanup.policy** | `delete` (time/size retention) or `compact` (keep latest key). |

@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+miletto_data_platform.egg-info/PKG-INFO
+miletto_data_platform.egg-info/SOURCES.txt
+miletto_data_platform.egg-info/dependency_links.txt
+miletto_data_platform.egg-info/requires.txt
+miletto_data_platform.egg-info/top_level.txt
+tests/test_smoke.py

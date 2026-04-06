@@ -1,0 +1,30 @@
+[
+  {
+    "name": "job_bronze_to_silver.dbo.iss_data",
+    "email_notifications": {},
+    "webhook_notifications": {},
+    "timeout_seconds": 0,
+    "max_concurrent_runs": 1,
+    "tasks": [
+      {
+        "task_key": "silver-dbo-iss_data-job",
+        "run_if": "ALL_SUCCESS",
+        "notebook_task": {
+          "notebook_path": "/Workspace/Users/thalesfmorais94@gmail.com/dlt-metadata-driven-AI-pipelines/pipelines_notebooks_templates/silver/silver_pipeline",
+          "base_parameters": {
+            "source_table": "bronze.dbo.iss_data",
+            "destination_table": "silver.dbo.iss_data",
+            "data_contract_id": "1"
+          },
+          "source": "WORKSPACE"
+        },
+        "timeout_seconds": 0,
+        "email_notifications": {}
+      }
+    ],
+    "queue": {
+      "enabled": true
+    },
+    "performance_target": "PERFORMANCE_OPTIMIZED"
+  }
+]
