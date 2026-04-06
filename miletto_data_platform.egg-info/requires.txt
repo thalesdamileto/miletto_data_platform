@@ -1,0 +1,16 @@
+
+[contracts]
+pydantic>=2.6
+pyyaml>=6.0
+
+[dev]
+mypy>=1.8
+pytest>=8.0
+ruff>=0.3
+
+[kafka]
+pydantic>=2.6
+pyyaml>=6.0
+
+[ui]
+streamlit>=1.40

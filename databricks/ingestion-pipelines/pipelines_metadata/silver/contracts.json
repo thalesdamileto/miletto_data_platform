@@ -1,0 +1,77 @@
+{
+	"contract_list":
+	[
+		{
+			"contract_id": "1",
+			"data_producer":"squad_email@squad.com",
+			"data_consumers":[
+				{
+					"consumer":"Thales Morais",
+					"purpose": "Silver process",
+					"priority": "P2"
+				},
+				{
+					"consumer":"Squad Precalcs",
+					"purpose": "Create precalced features",
+					"priority": "P3"
+				}
+			],
+			"parameters":
+			{
+				"source":{
+					"catalog":"bronze",
+					"schema":"dbo",
+					"table":"iss_data"
+				},
+				"destination":{
+					"catalog":"silver",
+					"schema":"dbo",
+					"table":"iss_data"
+				},
+				"pk_columns":"timestamp",
+        "watermark_column":"ingested_at",
+				"ordering_column": "ingested_at",
+				"column_mapping":[
+					{
+						"source_column":"timestamp",
+						"destination_column":"timestamp",
+						"nullable": false,
+						"type": "bigint"
+					},
+					{
+						"source_column":"iss_position.latitude",
+						"destination_column":"latitude",
+						"nullable": true,
+						"type": "double"
+					},
+					{
+						"source_column":"iss_position.longitude",
+						"destination_column":"longitude",
+						"nullable": true,
+						"type": "double"
+					},
+					{
+						"source_column":"message",
+						"destination_column":"message",
+						"nullable": true,
+						"type": "string",
+						"force_cast": false
+					},
+					{
+						"source_column":"ingested_at",
+						"destination_column":"ingested_at",
+						"nullable": false,
+						"type": "timestamp"
+					}
+				],
+				"schedule":{
+					"databricks_quartz_cron":"1 45 0 * * ?"
+				},
+				"quality_procedures":{
+					"lower_case_columns":"message",
+					"strip_str_columns": "message"
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,37 @@
+# UI application — AI / agent context
+
+## Technical purpose
+
+The **`UI/app`** Streamlit shell is the **human-facing console** for the Miletto Data Platform: navigation hub toward databases, contracts, pipelines, monitoring, requests, and documentation. It does **not** own business logic for ingestion or Kafka; it will later call APIs or read repo metadata as backends are added.
+
+## Design patterns
+
+- **Streamlit** for layout and multipage evolution (`pages/` in a future change).
+- **Python 3.11+** with **type hints** for non-trivial helpers; keep `app.py` readable.
+- **No secrets** in the UI code; use env vars / Databricks secrets / vault when connecting to real systems.
+- **Monorepo boundaries:** UI links and copy may **reference** paths like `databricks/`, `contracts/`, `kafka/` but must not duplicate canonical schemas—those live in their respective apps.
+
+## Golden code (entry layout)
+
+```python
+import streamlit as st
+
+st.set_page_config(page_title="Miletto Data Platform", layout="wide", initial_sidebar_state="collapsed")
+st.title("Miletto Data Platform")
+# Use st.columns for a grid; st.button(disabled=True) for placeholders until routes exist.
+```
+
+## Glossary
+
+| Term | Meaning in this UI |
+|------|---------------------|
+| **Tile / area** | A home-screen card mapping to a future page (Databases, Data Contracts, etc.). |
+| **Pipeline** | In-app navigation target; in the repo it means DLT/Databricks jobs under `databricks/`. |
+| **Data contract** | In-app target; canonical definitions remain in `databricks/.../contracts.json` and `contracts/` rules until migrated. |
+| **Monitor** | Future dashboards for job health and data quality—not the same as Databricks “SQL warehouse monitor” unless wired explicitly. |
+
+## Run locally
+
+From repository root (after `pip install -e ".[ui]"`):
+
+`streamlit run UI/app/app.py`

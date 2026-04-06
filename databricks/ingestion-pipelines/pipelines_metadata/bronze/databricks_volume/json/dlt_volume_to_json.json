@@ -1,0 +1,27 @@
+[
+    {
+    "pipeline_type": "WORKSPACE",
+    "name": "dlt_volume_to_json-bronze.dbo.iss_data",
+    "configuration": {
+        "source_path": "/Volumes/workspace/default/raw/iss_data/",
+        "target_schema": "dbo",
+        "target_table": "iss_data",
+        "description": "Dados de localização da ISS obtidos através da API pública"
+    },
+    "libraries": [
+        {
+        "glob": {
+            "include": "/Workspace/Users/thalesfmorais94@gmail.com/dlt-metadata-driven-AI-pipelines/notebooks/bronze/databricks_volume/json/dlt_volume_json_pipeline.py"
+        }
+        }
+    ],
+    "schema": "dbo",
+    "continuous": false,
+    "development": true,
+    "photon": true,
+    "channel": "CURRENT",
+    "catalog": "bronze",
+    "serverless": true,
+    "root_path": "/Workspace/Shared/rooth_path/bronze/dbo/iss_data"
+    }
+]

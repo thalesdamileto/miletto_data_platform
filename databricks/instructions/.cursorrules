@@ -1,0 +1,67 @@
+# Databricks application — AI / agent context
+
+## Required reading
+
+All pipeline and metadata rules are defined in:
+
+- `AGENT_INSTRUCTIONS.md` (this directory)
+
+Read that file before creating or editing pipeline metadata. Do not contradict it.
+
+## Technical purpose
+
+This application owns **Databricks ingestion**: metadata-driven **DLT** (Delta Live Tables) style pipelines, **bronze** (raw landing from Volumes) and **silver** (curated contracts and transformations). Future **DABs** (`databricks.yml`) assets should live under this tree when introduced.
+
+## Design patterns (this repo)
+
+- **Metadata as source of truth:** New pipelines are expressed as JSON under `../ingestion-pipelines/pipelines_metadata/`, matching existing files’ structure and keys.
+- **Do not invent schema:** Copy the closest existing metadata file; only change allowed fields per `AGENT_INSTRUCTIONS.md`.
+- **Notebooks and templates:** Do not modify pipeline notebooks or templates unless product owners explicitly allow it; prefer metadata-only changes.
+- **Python:** When adding code, use **Python 3.11+** with **type hints**; align with root `pyproject.toml` (ruff/mypy).
+
+## Golden code (bronze metadata — illustrative)
+
+Real files live under `../ingestion-pipelines/pipelines_metadata/bronze/databricks_volume/json/`. Structure must match them exactly; keys like `pipeline_type`, `libraries`, `continuous`, `development`, `photon`, `channel`, `catalog`, `serverless` are **fixed** per `AGENT_INSTRUCTIONS.md`.
+
+```json
+[
+  {
+    "pipeline_type": "WORKSPACE",
+    "name": "dlt_volume_to_json-bronze.<schema>.<table>",
+    "configuration": {
+      "source_path": "/Volumes/workspace/default/raw/<table>/",
+      "target_schema": "<schema>",
+      "target_table": "<table>",
+      "description": "<human readable description>"
+    },
+    "libraries": [
+      {
+        "glob": {
+          "include": "<workspace path to dlt_volume_json_pipeline.py — do not change without policy>"
+        }
+      }
+    ],
+    "schema": "<schema>",
+    "continuous": false,
+    "development": false,
+    "photon": true,
+    "channel": "CURRENT",
+    "catalog": "bronze",
+    "serverless": true,
+    "root_path": "/Workspace/Shared/rooth_path/bronze/<schema>/<table>"
+  }
+]
+```
+
+## Glossary (this application)
+
+| Term | Meaning here |
+|------|----------------|
+| **DLT / Delta Live Tables** | Databricks declarative pipeline framework for bronze/silver tables. |
+| **Bronze** | Raw or minimally processed landing layer; catalog is typically `bronze`. |
+| **Silver** | Curated layer driven by **contracts** (see `../ingestion-pipelines/pipelines_metadata/silver/contracts.json`). |
+| **pipeline_type** | Metadata discriminator for how the job is deployed (e.g. `WORKSPACE`). |
+| **root_path** | Workspace folder path for pipeline deployment artifacts for that pipeline. |
+| **contract_list** | JSON array of silver **data contracts** (source/destination, columns, quality). |
+| **column_mapping** | Per-column mapping from bronze source to silver destination (types, nullability, casts). |
+| **catalog / schema / table** | Unity Catalog (or equivalent) three-part naming for source and target. |
