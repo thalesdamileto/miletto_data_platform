@@ -5,7 +5,7 @@ import requests
 import json
 
 # 1. Configurações para Pokémon
-output_path_poke = "/Volumes/workspace/default/raw/pokemon_data/"
+target_path = "/Volumes/workspace/default/raw/pokemon_data/"
 
 def fetch_pokemon_data(pokemon_name):
     try:
@@ -16,7 +16,7 @@ def fetch_pokemon_data(pokemon_name):
         
         # Selecionamos apenas algumas infos para o log, mas salvamos o JSON inteiro
         filename = f"poke_{pokemon_name}.json"
-        with open(f"{output_path_poke}{filename}", "w") as f:
+        with open(f"{target_path}{filename}", "w") as f:
             json.dump(data, f)
             
         print(f"Sucesso: Dados de {pokemon_name} capturados. Peso: {data['weight']}")

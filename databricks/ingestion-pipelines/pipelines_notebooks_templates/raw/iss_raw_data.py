@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 # 1. Configurações de Destino
-output_path = "/Volumes/workspace/default/raw/iss_data/"  # Ajuste conforme o volume disponível
+target_path = spark.conf.get("target_path")
 
 def fetch_and_save_iss_data():
     try:
@@ -21,7 +21,7 @@ def fetch_and_save_iss_data():
         
         # 3. Nome do arquivo único (timestamp para não sobrescrever)
         filename = f"iss_data_{int(time.time())}.json"
-        full_path = f"{output_path}{filename}"
+        full_path = f"{target_path}{filename}"
         print(data)
         
         # 4. Salvar localmente - ajuste para volume UC

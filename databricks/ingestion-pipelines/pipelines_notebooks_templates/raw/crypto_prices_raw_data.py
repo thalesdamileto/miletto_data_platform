@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 # 1. Configurações para Cripto
-output_path_crypto = "/Volumes/workspace/default/raw/crypto_prices/"
+target_path = "/Volumes/workspace/default/raw/crypto_prices/"
 
 def fetch_crypto_prices():
     try:
@@ -21,7 +21,7 @@ def fetch_crypto_prices():
         data['timestamp_capture'] = datetime.now().isoformat()
         
         filename = f"crypto_{int(time.time())}.json"
-        with open(f"{output_path_crypto}{filename}", "w") as f:
+        with open(f"{target_path}{filename}", "w") as f:
             json.dump(data, f)
             
         print(f"Crypto Data: BTC ${data['bitcoin']['usd']} | ETH ${data['ethereum']['usd']}")

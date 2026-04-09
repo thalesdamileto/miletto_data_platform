@@ -7,7 +7,7 @@ from datetime import datetime
 
 # 1. Configurações de Destino
 # Criamos uma pasta específica para os dados de cervejarias
-output_path = "/Volumes/workspace/default/raw/brewery_data/" 
+target_path = "/Volumes/workspace/default/raw/brewery_data/" 
 
 def fetch_and_save_brewery_data():
     try:
@@ -27,7 +27,7 @@ def fetch_and_save_brewery_data():
         
         # 3. Nome do arquivo único
         filename = f"breweries_{int(time.time())}.json"
-        full_path = f"{output_path}{filename}"
+        full_path = f"{target_path}{filename}"
         
         # 4. Salvar no Volume do Unity Catalog
         # Certifique-se de que o diretório existe ou o Databricks tenha permissão para criar
