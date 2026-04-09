@@ -8,6 +8,54 @@ from typing import Any
 import requests
 
 
+def _monorepo_root_from_notebook() -> str:
+    """Raiz do repo no workspace (/Workspace/Repos/.../miletto_data_platform).
+
+    Diferente de silver_pipeline.py: lá o 'repo_root' aponta para
+    .../databricks/ingestion-pipelines (onde fica pipelines_notebooks_templates).
+    Aqui precisamos da raiz do monorepo para achar data_contract/ na raiz.
+    """
+    nb_path = (
+        dbutils.notebook.entry_point.getDbutils()
+        .notebook()
+        .getContext()
+        .notebookPath()
+        .get()
+    )
+    marker = "/databricks/ingestion-pipelines/pipelines_notebooks_templates"
+    if marker not in nb_path:
+        raise RuntimeError(
+            "Não foi possível inferir a raiz do monorepo a partir do notebookPath. "
+            f"Esperado trecho {marker!r} em {nb_path!r}. "
+            "Preencha os widgets contracts_path e metadata_path com caminhos absolutos "
+            "/Workspace/..."
+        )
+    prefix = nb_path.split(marker, maxsplit=1)[0]
+    return f"/Workspace{prefix}"
+
+
+def _resolve_workspace_path(user_path: str, monorepo_root: str) -> str:
+    """Caminhos relativos são resolvidos a partir da raiz do monorepo no Repos."""
+    path = user_path.strip()
+    if not path:
+        return path
+    if path.startswith("/Workspace") or path.startswith("/Volumes"):
+        return path
+    if path.startswith("/Repos"):
+        return path
+    return str(Path(monorepo_root) / path)
+
+
+def _default_notebook_base_path(monorepo_root: str) -> str:
+    """Path usado em notebook_task (sem prefixo /Workspace), ex.: /Repos/.../raw."""
+    root = monorepo_root.removeprefix("/Workspace")
+    return (
+        f"{root}/databricks/ingestion-pipelines/pipelines_notebooks_templates/raw"
+    )
+
+
+MONOREPO_ROOT = _monorepo_root_from_notebook()
+
 dbutils.widgets.text("contracts_path", "data_contract/data_contracts.json")
 dbutils.widgets.text(
     "metadata_path",
@@ -15,8 +63,7 @@ dbutils.widgets.text(
 )
 dbutils.widgets.text(
     "notebook_base_path",
-    "/Repos/data-platform/miletto_data_platform/"
-    "databricks/ingestion-pipelines/pipelines_notebooks_templates/raw",
+    "",
 )
 dbutils.widgets.text("timezone_id", "America/Sao_Paulo")
 
@@ -24,10 +71,24 @@ dbutils.widgets.text("timezone_id", "America/Sao_Paulo")
 DATABRICKS_HOST = dbutils.secrets.get("data-platform", "DATABRICKS_HOST").strip().rstrip("/")
 DATABRICKS_TOKEN = dbutils.secrets.get("data-platform", "DATABRICKS_TOKEN").strip()
 
-CONTRACTS_PATH = dbutils.widgets.get("contracts_path").strip()
-METADATA_PATH = dbutils.widgets.get("metadata_path").strip()
-NOTEBOOK_BASE_PATH = dbutils.widgets.get("notebook_base_path").strip().rstrip("/")
+CONTRACTS_PATH = _resolve_workspace_path(
+    dbutils.widgets.get("contracts_path"), MONOREPO_ROOT
+)
+METADATA_PATH = _resolve_workspace_path(
+    dbutils.widgets.get("metadata_path"), MONOREPO_ROOT
+)
+_notebook_base_widget = dbutils.widgets.get("notebook_base_path").strip().rstrip("/")
+NOTEBOOK_BASE_PATH = (
+    _notebook_base_widget
+    if _notebook_base_widget
+    else _default_notebook_base_path(MONOREPO_ROOT)
+)
 TIMEZONE_ID = dbutils.widgets.get("timezone_id").strip() or "America/Sao_Paulo"
+
+print(f"MONOREPO_ROOT (workspace): {MONOREPO_ROOT}")
+print(f"contracts: {CONTRACTS_PATH}")
+print(f"metadata: {METADATA_PATH}")
+print(f"notebook_base_path (jobs): {NOTEBOOK_BASE_PATH}")
 
 HEADERS = {
     "Authorization": f"Bearer {DATABRICKS_TOKEN}",
@@ -205,7 +266,7 @@ def _reset_job(job_id: int, job_settings: dict[str, Any]) -> None:
 def sync_jobs_from_metadata(metadata_path: str) -> None:
     if not DATABRICKS_HOST or not DATABRICKS_TOKEN:
         raise ValueError(
-            "Defina widgets databricks_host e databricks_token para sincronizar jobs."
+            "Configure secrets DATABRICKS_HOST e DATABRICKS_TOKEN no scope (ex.: data-platform)."
         )
 
     raw_jobs = _load_json(metadata_path)
