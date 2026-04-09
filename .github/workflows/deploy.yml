@@ -1,0 +1,30 @@
+# Atualiza o Databricks Repo vinculado ao Git após cada push em main (inclui merge de PR).
+# Requer no environment GitHub "prd": secrets DATABRICKS_HOST e DATABRICKS_TOKEN.
+
+name: Deploy to Databricks
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: databricks-deploy-main
+  cancel-in-progress: false
+
+jobs:
+  sync-databricks-repo:
+    name: Sync Databricks Repo
+    runs-on: ubuntu-latest
+    environment: prd
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+    steps:
+      - uses: databricks/setup-cli@v0.296.0
+
+      - name: Update repo to latest main
+        run: databricks repos update "/Workspace/Repos/data-platform/miletto_data_platform" --branch main
