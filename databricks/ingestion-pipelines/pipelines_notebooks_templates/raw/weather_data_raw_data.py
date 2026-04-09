@@ -1,13 +1,14 @@
 # Databricks notebook source
 # DBTITLE 1,Imports
 # Imports
+import os
 import requests
 import json
 import time
 from datetime import datetime
 
 # 1. Configurações para Clima
-output_path_weather = "/Volumes/workspace/default/raw/weather_data/"
+target_path = dbutils.widgets.get("target_path")
 API_KEY = "SUA_CHAVE_AQUI" 
 
 def fetch_weather_data(city="Sao Paulo"):
@@ -17,8 +18,11 @@ def fetch_weather_data(city="Sao Paulo"):
         response.raise_for_status()
         data = response.json()
         
+        dest_dir = target_path.rstrip("/")
+        os.makedirs(dest_dir, exist_ok=True)
+
         filename = f"weather_{city}_{int(time.time())}.json"
-        with open(f"{output_path_weather}{filename}", "w") as f:
+        with open(f"{dest_dir}/{filename}", "w") as f:
             json.dump(data, f)
             
         temp = data['main']['temp']

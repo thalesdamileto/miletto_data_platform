@@ -1,13 +1,13 @@
 # Databricks notebook source
 # DBTITLE 1,Imports
+import os
 import requests
 import json
 import time
 from datetime import datetime
 
 # 1. Configurações de Destino
-# Criamos uma pasta específica para os dados de cervejarias
-output_path = "/Volumes/workspace/default/raw/brewery_data/" 
+target_path = dbutils.widgets.get("target_path")
 
 def fetch_and_save_brewery_data():
     try:
@@ -26,8 +26,11 @@ def fetch_and_save_brewery_data():
         }
         
         # 3. Nome do arquivo único
+        dest_dir = target_path.rstrip("/")
+        os.makedirs(dest_dir, exist_ok=True)
+
         filename = f"breweries_{int(time.time())}.json"
-        full_path = f"{output_path}{filename}"
+        full_path = f"{dest_dir}/{filename}"
         
         # 4. Salvar no Volume do Unity Catalog
         # Certifique-se de que o diretório existe ou o Databricks tenha permissão para criar

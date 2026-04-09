@@ -257,3 +257,55 @@ The agent must never:
 - invent new metadata schemas
 
 All pipeline creation must happen exclusively through metadata JSON files.
+
+---
+
+# RAW Job Orchestration Rules
+
+For RAW ingestion requests, the agent must collect and validate the minimum required inputs in
+`data_contract/data_contracts.json` under `sub_contracts.raw`.
+
+## Mandatory RAW contract fields
+
+- `_id`
+- `data_producer` (must be an email and must receive failure notifications)
+- `sub_contracts.raw.parameters.file_name`
+- `sub_contracts.raw.parameters.schedule.databricks_quartz_cron`
+- `sub_contracts.raw.parameters.target_path`
+
+The `file_name` is always the notebook file under:
+
+`databricks/ingestion-pipelines/pipelines_notebooks_templates/raw/`
+
+## RAW metadata generation target
+
+The RAW job metadata must be generated in:
+
+`databricks/ingestion-pipelines/pipelines_metadata/raw/raw_data_pipes.json`
+
+The generated payload must follow the same structure of existing entries in that file.
+
+## RAW automation notebook behavior
+
+`databricks/ingestion-pipelines/pipelines_notebooks_templates/raw/raw_pipeline_creator.py`
+is responsible for:
+
+1. reading RAW contracts from `data_contract/data_contracts.json`
+2. generating/updating RAW job metadata in `raw_data_pipes.json`
+3. creating jobs that do not exist in Databricks
+4. updating jobs that already exist when metadata changes
+
+## Naming and mapping conventions (RAW)
+
+- job name: `raw_job_<notebook_name_without_py>_<_id>`
+- task key: `<notebook_name_without_py>_<_id>`
+- notebook path must point to the RAW notebook in the templates/raw folder
+- `base_parameters.target_path` comes from contract `target_path`
+- `schedule.quartz_cron_expression` comes from contract cron
+- producer email must be mapped to job failure notifications
+
+## Exception to safety constraints
+
+Pipeline notebook templates should not be changed by default.
+Exception: when explicitly requested for RAW job orchestration, the agent may update
+`raw_pipeline_creator.py` and Databricks documentation files.

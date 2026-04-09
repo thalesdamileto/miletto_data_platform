@@ -18,6 +18,8 @@ This application owns **Databricks ingestion**: metadata-driven **DLT** (Delta L
 - **Do not invent schema:** Copy the closest existing metadata file; only change allowed fields per `AGENT_INSTRUCTIONS.md`.
 - **Notebooks and templates:** Do not modify pipeline notebooks or templates unless product owners explicitly allow it; prefer metadata-only changes.
 - **Python:** When adding code, use **Python 3.11+** with **type hints**; align with root `pyproject.toml` (ruff/mypy).
+- **RAW orchestration:** For RAW jobs, required data must first exist in `../../data_contract/data_contracts.json` (`_id`, `data_producer`, `file_name`, cron, `target_path`) before metadata/job automation.
+- **RAW creator ownership:** `../ingestion-pipelines/pipelines_notebooks_templates/raw/raw_pipeline_creator.py` owns RAW metadata generation (`raw_data_pipes.json`) and Databricks job create/update sync.
 
 ## Golden code (bronze metadata — illustrative)
 
