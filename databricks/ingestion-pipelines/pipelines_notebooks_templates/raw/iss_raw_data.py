@@ -1,13 +1,14 @@
 # Databricks notebook source
 # DBTITLE 1,Imports
 # Imports
+import os
 import requests
 import json
 import time
 from datetime import datetime
 
 # 1. Configurações de Destino
-target_path = spark.conf.get("target_path")
+target_path = dbutils.widgets.get("target_path")
 
 def fetch_and_save_iss_data():
     try:
@@ -19,12 +20,15 @@ def fetch_and_save_iss_data():
         # Adicionamos um timestamp de processamento para facilitar o particionamento depois
         data['ingested_at'] = datetime.now().isoformat()
         
-        # 3. Nome do arquivo único (timestamp para não sobrescrever)
+        # 3. Garantir diretório no Volume (job JSON não cria pastas)
+        dest_dir = target_path.rstrip("/")
+        os.makedirs(dest_dir, exist_ok=True)
+
         filename = f"iss_data_{int(time.time())}.json"
-        full_path = f"{target_path}{filename}"
+        full_path = f"{dest_dir}/{filename}"
         print(data)
-        
-        # 4. Salvar localmente - ajuste para volume UC
+
+        # 4. Salvar no Volume UC
         with open(full_path, "w") as f:
             json.dump(data, f)
             

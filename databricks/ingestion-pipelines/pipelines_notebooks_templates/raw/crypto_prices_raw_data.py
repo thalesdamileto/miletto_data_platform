@@ -1,13 +1,14 @@
 # Databricks notebook source
 # DBTITLE 1,Imports
 # Imports
+import os
 import requests
 import json
 import time
 from datetime import datetime
 
 # 1. Configurações para Cripto
-target_path = "/Volumes/workspace/default/raw/crypto_prices/"
+target_path = dbutils.widgets.get("target_path")
 
 def fetch_crypto_prices():
     try:
@@ -20,8 +21,11 @@ def fetch_crypto_prices():
         # Adiciona metadados
         data['timestamp_capture'] = datetime.now().isoformat()
         
+        dest_dir = target_path.rstrip("/")
+        os.makedirs(dest_dir, exist_ok=True)
+
         filename = f"crypto_{int(time.time())}.json"
-        with open(f"{target_path}{filename}", "w") as f:
+        with open(f"{dest_dir}/{filename}", "w") as f:
             json.dump(data, f)
             
         print(f"Crypto Data: BTC ${data['bitcoin']['usd']} | ETH ${data['ethereum']['usd']}")
