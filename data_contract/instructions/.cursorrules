@@ -1,0 +1,74 @@
+# Data contract application - AI / agent context
+
+## Technical purpose
+
+`data_contract/data_contracts.json` is the source of truth for data contract definitions in this app.
+Each contract entry under `contract_list` defines:
+
+- ownership metadata (`data_producer`)
+- `sub_contracts.raw.parameters`
+- `sub_contracts.raw.data_consumers`
+- `sub_contracts.bronze.parameters`
+- `sub_contracts.bronze.data_consumers`
+- `sub_contracts.silver.parameters`
+- `sub_contracts.silver.data_consumers`
+
+When this file changes, downstream Databricks metadata/notebooks must remain consistent with the same contract intent.
+
+## Canonical structure to preserve
+
+The top-level JSON shape must stay:
+
+- `contract_list` (array)
+- each item with `data_producer`, `sub_contracts`
+
+Inside `sub_contracts`, preserve sections and nesting:
+
+- `raw.parameters.schedule.databricks_quartz_cron`
+- `raw.parameters.file_name`
+- `raw.parameters.target_path`
+- `raw.data_consumers[]` with `consumer`, `purpose`, `priority`
+- `bronze.parameters.source_path`
+- `bronze.parameters.target_schema`
+- `bronze.parameters.target_table`
+- `bronze.parameters.description`
+- `bronze.data_consumers[]` with `consumer`, `purpose`, `priority`
+- `silver.parameters.source` (`catalog`, `schema`, `table`)
+- `silver.parameters.destination` (`catalog`, `schema`, `table`)
+- `silver.parameters.pk_columns`
+- `silver.parameters.watermark_column`
+- `silver.parameters.ordering_column`
+- `silver.parameters.column_mapping` (array of mapping objects)
+- `silver.parameters.schedule.databricks_quartz_cron`
+- `silver.parameters.quality_procedures`
+- `silver.data_consumers[]` with `consumer`, `purpose`, `priority`
+
+## Design patterns
+
+1. Append new contracts to `contract_list`; avoid replacing unrelated entries.
+2. Keep existing key names and nesting exactly as in the current file.
+3. Reuse the same field style for `column_mapping` objects:
+   - required: `source_column`, `destination_column`, `nullable`, `type`
+   - optional: `force_cast`
+4. Keep cron fields in `databricks_quartz_cron` format.
+5. Keep `data_consumers` scoped per layer (`raw`, `bronze`, `silver`), not at contract root.
+6. Keep value types consistent (string, boolean, array/object).
+
+## Checklist when a contract changes
+
+| Step | Action |
+|------|--------|
+| 1 | Update `data_contract/data_contracts.json` preserving current schema and naming. |
+| 2 | Verify `raw.file_name` exists under `databricks/ingestion-pipelines/pipelines_notebooks_templates/raw/`. |
+| 3 | Verify bronze targets (`target_schema`, `target_table`, `source_path`) align with bronze ingestion metadata. |
+| 4 | Verify silver `source`/`destination`, keys, watermark, mapping, and quality procedures align with silver pipeline metadata. |
+
+## Glossary
+
+| Term | Meaning here |
+|------|----------------|
+| **Data contract** | Agreed structure and semantics of one data domain pipeline. |
+| **data_producer** | Owner/contact responsible for upstream data. |
+| **data_consumers** | Layer-specific downstream users plus `purpose` and `priority`. |
+| **raw / bronze / silver** | Layer-specific processing parameters grouped in `sub_contracts`. |
+| **column_mapping** | Field-level mapping from source to destination with data type/nullability rules. |
