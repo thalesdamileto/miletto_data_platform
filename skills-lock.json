@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "python-testing": {
+      "source": "autumnsgrove/groveengine",
+      "sourceType": "github",
+      "computedHash": "9798ad86de0b7cae16b656ebf043a880b33a6a216cd2813ecd4a936439715903"
+    }
+  }
+}
